@@ -6,6 +6,8 @@ require 'haml'
 require 'stats'
 require 'table'
 
+ELASTIC_URL = ENV['BONSAI_URL'] || 'http://localhost:9200'
+
 REPOS = %w(
   travis-crowd
   pro

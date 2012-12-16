@@ -34,7 +34,7 @@ class Stats
   end
 
   def fetch
-    response = Faraday.get('http://localhost:9200/git/_search') do |request|
+    response = Faraday.get("#{ELASTIC_URL}/git/_search") do |request|
       request.body = JSON.dump(query)
     end
     response.body
