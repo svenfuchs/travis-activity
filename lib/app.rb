@@ -6,6 +6,10 @@ require 'crowd'
 ELASTIC_URL = ENV['BONSAI_URL'] || 'http://localhost:9200'
 
 class App < Sinatra::Base
+  get '/' do
+    redirect to('/stats')
+  end
+
   get '/stats' do
     params.delete('name') if params['name'] == 'Travis CI'
 
