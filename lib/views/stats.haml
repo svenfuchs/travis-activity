@@ -1,0 +1,49 @@
+%html
+  %head
+    %script{ :src => "https://www.google.com/jsapi", :type => "text/javascript" }
+    %script
+      = 'var stats  = ' + JSON.dump(@stats)
+      = 'var colors = ' + JSON.dump(@colors)
+
+    :javascript
+      google.load("visualization", "1", { packages:["corechart"] });
+      google.setOnLoadCallback(drawChart);
+      function drawChart() {
+        var data = google.visualization.arrayToDataTable(stats);
+
+        var options = {
+          isStacked: true,
+          areaOpacity: 1,
+          lineWidth: 0,
+          chartArea: { left: 50, top: 10, width: '85%', height:'90%' },
+          hAxis: { textStyle: { color: '#666', fontSize: 14 }, gridlines: { count: 52 } },
+          vAxis: { textStyle: { color: '#666', fontSize: 14 } },
+          legend: { textStyle: { color: '#666', fontSize: 14 } },
+          colors: colors
+        };
+
+        var chart = new google.visualization.AreaChart(document.getElementById('chart_total'));
+        chart.draw(data, options);
+      }
+  %body
+    %h1= "#{params['name'] || 'Travis CI'}'s changes by #{params[:interval]}"
+    #chart_total{ style: 'width: 100%; height: 560px;' }
+    %form{ action: '/stats' }
+      %select{ name: 'repos[]', multiple: true, size: @repos.size }
+        - @repos.each do |repo|
+          %option{ selected: (params['repos'] || []).include?(repo) }
+            = repo
+      %select{ name: 'name', multiple: false, size: @names.size + 1 }
+        %option{ selected: !params['name'] } Travis CI
+        - @names.each do |name|
+          %option{ selected: params['name'] == name }
+            = name
+      %select{ name: 'interval', multiple: true, size: 3 }
+        - @intervals.each do |interval|
+          %option{ selected: params['interval'] == interval }
+            = interval
+
+      %input{ type: :submit }
+
+
+

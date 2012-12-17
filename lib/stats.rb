@@ -1,55 +1,49 @@
-require 'faraday'
-require 'json'
-require 'date'
-
 class Stats
-  attr_reader :repo, :user, :interval
+  autoload :Record, 'stats/record'
+  autoload :Table,  'stats/table'
 
-  def initialize(repo, user = nil, interval)
-    @repo = repo
-    @user = user
-    @interval = interval
-  end
+  REPOS = %w(
+    travis-crowd
+    pro travis-admin travis-sso
+    travis-ci travis-core
+    travis-cookbooks travis-build travis-worker travis-images travis-artifacts
+    travis-hub travis-listener travis-gatekeeper travis-tasks travis-log
+    travis-assets travis-web travis-api
+    gh coder lograge
+  )
 
-  def data
-    json = JSON.parse(fetch)
-    data = json['facets']['stats']['entries']
-    data.inject({}) { |data, entry| data.merge(send(interval, entry) => entry['total_count']) }
-  end
+  COLORS = {
+    'travis-crowd'      => '#d94802',
+    'travis-ci'         => '#ddd',
+    'travis-core'       => '#999',
+    'pro'               => '#173D63',
+    'travis-sso'        => '#235C95',
+    'travis-admin'      => '#3985D0',
+    'travis-cookbooks'  => '#314B06',
+    'travis-build'      => '#56840B',
+    'travis-worker'     => '#7ABD0F',
+    'travis-images'     => '#9DED1D',
+    'travis-artifacts'  => '#BEF368',
+    'travis-hub'        => '#50020F',
+    'travis-listener'   => '#8C031A',
+    'travis-gatekeeper' => '#B40421',
+    'travis-tasks'      => '#F0052C',
+    'travis-log'        => '#FB4B68',
+    'travis-assets'     => '#CC9900',
+    'travis-web'        => '#F5B800',
+    'travis-api'        => '#FFD147',
+    'gh'                => '#2D6254',
+    'coder'             => '#408C78',
+    'lograge'           => '#57B29A'
+  }
 
-  def day(entry)
-    to_date(entry['time']).yday
-  end
-
-  def month(entry)
-    to_date(entry['time']).month
-  end
-
-  def week(entry)
-    to_date(entry['time']).cweek
-  end
-
-  def to_date(timestamp)
-    Date.strptime((timestamp / 1000).to_s,'%s')
-  end
-
-  def fetch
-    response = Faraday.get("#{ELASTIC_URL}/git/_search") do |request|
-      request.body = JSON.dump(query)
-    end
-    response.body
-  end
-
-  def query_string
-    [repo, user].compact.map { |str| %("#{str}") }.join(' AND ')
-  end
-
-  def query
-    {
-      size: 10,
-      sort: { date:  { order: 'asc' } },
-      query: { query_string: { query: query_string } },
-      facets: { stats: { date_histogram: { key_field: 'date', value_field: 'changes', interval: interval } } }
-    }
-  end
+  NAMES = %w(
+    Josh
+    Konstantin
+    Mathias
+    Sven
+    Michael
+    Lucas
+    Piotr
+  )
 end
